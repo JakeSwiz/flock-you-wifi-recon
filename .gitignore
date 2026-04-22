@@ -1,0 +1,6 @@
+.pio/
+.vscode/
+.DS_Store
+*.log
+wifi-*.log
+promisc-*.log
