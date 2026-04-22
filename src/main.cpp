@@ -1399,9 +1399,19 @@ void setup() {
     digitalWrite(BUZZER_PIN, LOW);
 
 #ifdef WIFI_SCAN_MODE
-    printf("\n========================================\n");
-    printf("  FLOCK-YOU WiFi Scan Mode\n");
-    printf("========================================\n");
+    printf("\n");
+    printf("   _____         _      _____                       _ _         \n");
+    printf("  / ____|       (_)    / ____|                     (_) |        \n");
+    printf(" | (_____      ___ ___| (___    ___  ___ _   _ _ __ _| |_ _   _ \n");
+    printf("  \\___ \\ \\ /\\ / / |_  /\\___ \\  / _ \\/ __| | | | '__| | __| | | |\n");
+    printf("  ____) \\ V  V /| |/ / ____) ||  __/ (__| |_| | |  | | |_| |_| |\n");
+    printf(" |_____/ \\_/\\_/ |_/___|_____/  \\___|\\___|\\__,_|_|  |_|\\__|\\__, |\n");
+    printf("                                                            __/ |\n");
+    printf("                                                           |___/ \n");
+    printf("\n");
+    printf("       Cyber Security / Adversarial Emulation\n");
+    printf("       fork from flock-you to add WiFi RX capability\n");
+    printf("\n");
     fyWifiScanSetup();
     fyBootBeep();
     return;
