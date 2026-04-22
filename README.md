@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/swiz-security.png" alt="Swiz Security" width="480">
+</p>
+
 # flock-you-wifi-recon
 
 Passive WiFi recon firmware for ESP32-WROVER that detects Flock Safety ALPR cameras by their STA-mode probe requests. Works even when the camera's hotspot is off, which is basically always in my neighborhood.
