@@ -72,6 +72,22 @@ static const char* flock_mac_prefixes[] = {
     "b4:1e:52"
 };
 
+// Community-observed Flock prefixes (DeFlock). Field observations rather than
+// direct registrations, so these are reported at MEDIUM confidence — a "likely
+// Flock, cross-check it" signal, not a positive ID.
+//
+// 82:6b:f2 carries an extra caveat: contributed by Michael / DeFlockJoplin and
+// attributed to a Raven acoustic sensor, but upstream flock-you removed it in
+// commit 39012a7 ("Remove possible erroneous MAC for further validation"). It
+// is also locally administered (bit 1 of the first byte is set), so it is not
+// IEEE-registered and will not appear in oui.txt. Do not promote to high
+// confidence without new field evidence.
+static const char* flock_community_mac_prefixes[] = {
+    "b8:35:32", "c0:35:32", "24:b2:b9", "e0:4f:43", "b8:1e:a4",
+    "70:08:94", "3c:71:bf", "58:00:e3", "5c:93:a2", "64:6e:69",
+    "48:27:ea", "a4:cf:12", "82:6b:f2"
+};
+
 // Flock Safety contract manufacturers — lower confidence alone.
 // These OUIs belong to Liteon Technology and USI (Universal Scientific
 // Industrial), which produce Flock hardware but also ship unrelated
@@ -282,6 +298,13 @@ static void fyHeartbeat() {
 static bool checkFlockMAC(const char* mac_str) {
     for (size_t i = 0; i < sizeof(flock_mac_prefixes)/sizeof(flock_mac_prefixes[0]); i++) {
         if (strncasecmp(mac_str, flock_mac_prefixes[i], 8) == 0) return true;
+    }
+    return false;
+}
+
+static bool checkFlockCommunityMAC(const char* mac_str) {
+    for (size_t i = 0; i < sizeof(flock_community_mac_prefixes)/sizeof(flock_community_mac_prefixes[0]); i++) {
+        if (strncasecmp(mac_str, flock_community_mac_prefixes[i], 8) == 0) return true;
     }
     return false;
 }
@@ -521,20 +544,27 @@ class FYBLECallbacks : public NimBLEAdvertisedDeviceCallbacks {
             method = "mac_prefix_soundthinking";
         }
 
-        // 3. Check Flock contract manufacturer OUIs (low confidence)
+        // 3. Check community-observed Flock OUIs (medium confidence)
+        if (!detected && checkFlockCommunityMAC(macPrefix)) {
+            detected = true;
+            method = "mac_prefix_community";
+            highConfidence = false;
+        }
+
+        // 4. Check Flock contract manufacturer OUIs (low confidence)
         if (!detected && checkFlockMfrMAC(macPrefix)) {
             detected = true;
             method = "mac_prefix_mfr";
             highConfidence = false;
         }
 
-        // 4. Check BLE device name patterns
+        // 5. Check BLE device name patterns
         if (!detected && !name.empty() && checkDeviceName(name.c_str())) {
             detected = true;
             method = "device_name";
         }
 
-        // 5. Check BLE manufacturer company IDs (from wgreenberg/flock-you)
+        // 6. Check BLE manufacturer company IDs (from wgreenberg/flock-you)
         if (!detected) {
             for (int i = 0; i < (int)dev->getManufacturerDataCount(); i++) {
                 std::string data = dev->getManufacturerData(i);
@@ -550,7 +580,7 @@ class FYBLECallbacks : public NimBLEAdvertisedDeviceCallbacks {
             }
         }
 
-        // 6. Check Raven gunshot detector service UUIDs
+        // 7. Check Raven gunshot detector service UUIDs
         if (!detected) {
             char detUUID[41] = {0};
             if (checkRavenUUID(dev, detUUID)) {
